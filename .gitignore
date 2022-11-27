@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+# Project need
+*.py
+*.in
+*.out
+*.gz
