@@ -36,3 +36,6 @@
 *.in
 *.out
 *.gz
+
+# Temp file
+*~
