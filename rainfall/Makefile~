@@ -1,0 +1,24 @@
+#----- Modify CC and CFLAGS as appropriate in your environment
+CC = g++
+CFLAGS = -O3 -std=c++1 -Wall -pedantic -pthread -fopenmp
+
+LIB = -lm -lc
+
+PROGS = rainfall_seq rainfall_pt
+OBJS = $(patsubst %, %.o, $(PROGS))
+all: $(PROGS)
+
+#------------ EXECUTABLE FILES ---------------
+rainfall_seq: rainfall_seq.o
+	$(CC) $(CFLAGS) -o $@ $^ $(LIB)
+
+rainfall_pt: rainfall_pt.o
+	$(CC) $(CFLAGS) -o $@ $^ $(LIB)
+
+%.o : %.c
+	$(CC) $(CFLAGS) -c $< $(INCLUDE) 
+
+.PRECIOUS: %.o
+.PHONY: clean
+clean:
+	rm -f $(PROGS) $(OBJS) *~
