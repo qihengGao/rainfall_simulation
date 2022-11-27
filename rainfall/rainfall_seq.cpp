@@ -12,6 +12,7 @@ int main(int argc, char ** argv){
     cout << "A = absorption rate (specified as a floating point number)" << endl;
     cout << "N = dimension of the landscape" << endl;
     cout << "elevation_file = input file that specifies the elevation of each point" << endl;
+    return EXIT_FAILURE;
   }
   // parse args from input
   const int timeSteps = atoi(argv[2]);

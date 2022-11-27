@@ -1,6 +1,6 @@
 #----- Modify CC and CFLAGS as appropriate in your environment
 CC = g++
-CFLAGS = -O3 -std=c++11 -Wall -pedantic -pthread -fopenmp
+CFLAGS = -O3 -std=gnu++11 -Wall -pedantic -pthread -fopenmp
 
 LIB = -lm -lc
 
