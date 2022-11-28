@@ -30,6 +30,8 @@
 *.exe
 *.out
 *.app
+rainfall_seq
+rainfall_pt
 
 # Project need
 *.py
