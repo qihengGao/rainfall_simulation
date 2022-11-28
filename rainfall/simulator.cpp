@@ -25,13 +25,13 @@ void Simulator::initElevations(ifstream& elevationFile) {
         }
         ++row;
     }
-    for (auto& row : this->landscape) {
-        for (auto& elevation : row) {
-            cout << elevation << " ";
-        }
-        cout << endl;
-    }
-    cout << "=====End of init Elevation=======" << endl;
+    // for (auto& row : this->landscape) {
+    //     for (auto& elevation : row) {
+    //         cout << elevation << " ";
+    //     }
+    //     cout << endl;
+    // }
+    // cout << "=====End of init Elevation=======" << endl;
 }
 
 void Simulator::initTrickleDir() {
@@ -62,15 +62,15 @@ void Simulator::initTrickleDir() {
         }
     }
 
-    for (int i = 0; i < N; ++i) {
-        for (int j = 0; j < N; ++j) {
-            cout << "[" << i << ", " << j << "]'s neigh: ";
-            for (auto& p : trickleDir[{i, j}]) {
-                cout << "[" << p.first << ", " << p.second << "], ";
-            }
-            cout << endl;
-        }
-    }
+    // for (int i = 0; i < N; ++i) {
+    //     for (int j = 0; j < N; ++j) {
+    //         cout << "[" << i << ", " << j << "]'s neigh: ";
+    //         for (auto& p : trickleDir[{i, j}]) {
+    //             cout << "[" << p.first << ", " << p.second << "], ";
+    //         }
+    //         cout << endl;
+    //     }
+    // }
 }
 
 void Simulator::rain(vector<vector<float>>& status, vector<vector<float>>& trickled) {
@@ -83,18 +83,18 @@ void Simulator::rain(vector<vector<float>>& status, vector<vector<float>>& trick
             }
             // 2) if points have raindrops, absorb
             if (status[i][j] > 0.0) {
-                float res = status[i][j] > this->absorbRate ? this->absorbRate : status[i][j];
-                status[i][j] -= res;
-                this->absorbed[i][j] += res;
+                float toAbsorb = status[i][j] > this->absorbRate ? this->absorbRate : status[i][j];
+                status[i][j] -= toAbsorb;
+                this->absorbed[i][j] += toAbsorb;
             }
             // 3a) calculate # of raindrops will next trickle to the lowest neighbors
             if (status[i][j] > 0.0 && this->trickleDir[{i, j}].size() > 0) {
                 vector<pair<int, int>> lowestNeighbors = this->trickleDir[{i, j}];
-                float dropToTrickle = status[i][j] > 1.0 ? 1.0 : status[i][j];
+                float dropToTrickle = status[i][j] >= 1.0 ? 1.0 : status[i][j];
                 status[i][j] -= dropToTrickle;
-                float trickledVal = dropToTrickle / lowestNeighbors.size();
-                for (auto& point : lowestNeighbors) {
-                    trickled[point.first][point.second] += trickledVal;
+                float toNeigh = dropToTrickle / lowestNeighbors.size();
+                for (const auto& point : lowestNeighbors) {
+                    trickled[point.first][point.second] += toNeigh;
                 }
             }
         }
@@ -103,21 +103,21 @@ void Simulator::rain(vector<vector<float>>& status, vector<vector<float>>& trick
 
 bool Simulator::updateStatus(int N, vector<vector<float>>& status, vector<vector<float>>& trickled) {
     bool hasNextRound = false;
-    if (this->totalSteps < 10) cout << "======status: ======" << endl;
+    // if (this->totalSteps < 10) cout << "======status: ======" << endl;
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
             status[i][j] += trickled[i][j];
             trickled[i][j] = 0.0;
-            if (this->totalSteps < 10) {
-                cout << status[i][j] << " ";
-            }
+            // if (this->totalSteps < 10) {
+            //     cout << status[i][j] << " ";
+            // }
             if (abs(status[i][j]) > FLT_EPSILON) {
                 hasNextRound = true;
             }
         }
-        if (this->totalSteps < 10) {
-            cout << endl;
-        }
+        // if (this->totalSteps < 10) {
+        //     cout << endl;
+        // }
     }
     return hasNextRound;
 }
@@ -125,14 +125,12 @@ bool Simulator::updateStatus(int N, vector<vector<float>>& status, vector<vector
 void Simulator::simulate() {
     cout << "===========start simulation============" << endl;
     int N = this->landscape.size();
-    vector<vector<float>> status(
-        N, vector<float>(N, 0.0));                             // in-time raindrop status of landscape
+    vector<vector<float>> status(N, vector<float>(N, 0.0));                             // in-time raindrop status of landscape
     vector<vector<float>> trickled(N, vector<float>(N, 0.0));  // in-time tricked raindrops for each point
-    this->totalSteps = 0;
     const double begin = omp_get_wtime();
     bool isWet = true;
     while (isWet) {
-        this->totalSteps++;
+        ++this->totalSteps;
         // 1st Traverse: rain, absorb, calculate trickled
         rain(status, trickled);
         // 3b) 2nd Traverse: update # of raindrops at each lowest neighbor & check wet
@@ -148,13 +146,12 @@ void Simulator::printResult() {
     cout << "Rainfall simulation completed in " << this->totalSteps
          << " time steps" << endl;
     cout << "Runtime = " << this->totalTime << " seconds" << endl;
-    cout << "The following grid shows the number of raindrops absorbed at each "
-            "point: \n"
-         << endl;
+    cout << endl;
+    cout << "The following grid shows the number of raindrops absorbed at each point:" << endl;
     for (const auto& row : this->absorbed) {
         for (const auto& res : row) {
             cout << setw(8) << setprecision(6) << res;
         }
+        cout << endl;
     }
-    cout << endl;
 }

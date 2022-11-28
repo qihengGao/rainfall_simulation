@@ -25,17 +25,17 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
   // parse args from input
-  const int timeSteps = atoi(argv[2]);
+  const int rainSteps = stoi(argv[2]);
   const float absorbRate = stof(argv[3]);
-  const int N = atoi(argv[4]);
-  const string elevationFile = argv[5];
+  const int N = stoi(argv[4]);
+  const string elevationFile(argv[5]);
 
-  ifstream file(elevationFile.c_str());
+  ifstream file(elevationFile);
   if (file.fail()) {
     cout << "Cannot open: " << elevationFile << endl;
     return EXIT_FAILURE;
   }
-  unique_ptr<Simulator> simulator(new Simulator(timeSteps, absorbRate, N, file));
+  unique_ptr<Simulator> simulator(new Simulator(rainSteps, absorbRate, N, file));
   simulator->simulate();
   simulator->printResult();
   return EXIT_SUCCESS;

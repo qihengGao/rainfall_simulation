@@ -40,7 +40,8 @@ class Simulator {
           totalSteps(0) {
         initElevations(elevationFile);
         initTrickleDir();
-        cout << "------Simulator created------" << endl;
+        cout << this->rainSteps << endl;
+        // cout << "------Simulator created------" << endl;
     }
     virtual ~Simulator() {}
     void rain(vector<vector<float>>& status, vector<vector<float>>& trickled);
