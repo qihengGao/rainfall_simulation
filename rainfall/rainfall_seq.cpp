@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <memory>
 
 #include "simulator.hpp"
 
@@ -34,10 +35,8 @@ int main(int argc, char** argv) {
     cout << "Cannot open: " << elevationFile << endl;
     return EXIT_FAILURE;
   }
-  Simulator* simulator = new Simulator(timeSteps, absorbRate, N, file);
-
+  unique_ptr<Simulator> simulator(new Simulator(timeSteps, absorbRate, N, file));
   simulator->simulate();
   simulator->printResult();
-  delete simulator;
   return EXIT_SUCCESS;
 }
