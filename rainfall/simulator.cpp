@@ -164,3 +164,26 @@ void Simulator::printResult() {
         cout << endl;
     }
 }
+
+void printMatrix(vector<vector<float>> matrix){
+    for (auto& row : matrix) {
+        for (auto& p : row) {
+            cout << p << " ";
+        }
+        cout << endl;
+    }
+}
+
+void printTrickleDir(unordered_map<pair<int, int>, vector<pair<int, int>>> trickleDir){
+    for (int i = 0; i < trickleDir.size(); ++i) {
+        for (int j = 0; j < trickleDir.size(); ++j) {
+            cout << "[" << i << ", " << j << "]'s neigh: ";
+            for (auto& p : trickleDir[{i, j}]) {
+                cout << "[" << p.first << ", " << p.second << "], ";
+            }
+            cout << endl;
+        }
+    }
+}
+
+
