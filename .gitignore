@@ -41,3 +41,7 @@ rainfall_pt
 
 # Temp file
 *~
+result
+result/*
+test
+test/*

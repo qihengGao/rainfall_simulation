@@ -79,7 +79,7 @@ void Simulator::rain(vector<vector<float>>& status, vector<vector<float>>& trick
         for (int j = 0; j < N; ++j) {
             // 1) Receive a new raindrop for each point while still raining
             if (this->totalSteps <= this->rainSteps) {
-                status[i][i] += 1.0;
+                status[i][j] += 1.0;
             }
             // 2) if points have raindrops, absorb
             if (status[i][j] > 0.0) {
@@ -99,6 +99,15 @@ void Simulator::rain(vector<vector<float>>& status, vector<vector<float>>& trick
             }
         }
     }
+    // if (this->totalSteps < 10) {
+    //     cout << this->totalSteps << ": absorbed" << endl;
+    //     for (int i = 0; i < N; ++i) {
+    //         for (int j = 0; j < N; ++j) {
+    //             cout << this->absorbed[i][j] << " ";
+    //         }
+    //         cout << endl;
+    //     }
+    // }
 }
 
 bool Simulator::updateStatus(int N, vector<vector<float>>& status, vector<vector<float>>& trickled) {
@@ -123,7 +132,7 @@ bool Simulator::updateStatus(int N, vector<vector<float>>& status, vector<vector
 }
 
 void Simulator::simulate() {
-    cout << "===========start simulation============" << endl;
+    // cout << "===========start simulation============" << endl;
     int N = this->landscape.size();
     vector<vector<float>> status(N, vector<float>(N, 0.0));                             // in-time raindrop status of landscape
     vector<vector<float>> trickled(N, vector<float>(N, 0.0));  // in-time tricked raindrops for each point
@@ -137,7 +146,7 @@ void Simulator::simulate() {
         isWet = updateStatus(N, status, trickled);
         // cout << "========== total steps: " << this->totalSteps << ", isWet: " << isWet << "==========" << endl;
     }
-    cout << "======End of simulation=======" << endl;
+    // cout << "======End of simulation=======" << endl;
     const double end = omp_get_wtime();
     this->totalTime = end - begin;
 }

@@ -27,6 +27,10 @@ class Simulator {
     vector<vector<float>> absorbed;  // absorbed raindrops at each point
     double totalTime;                // simulation complete time
     int totalSteps;                  // simulation complete time steps
+    void initElevations(ifstream& elevationFile);
+    void initTrickleDir();
+    void rain(vector<vector<float>>& status, vector<vector<float>>& trickled);
+    bool updateStatus(int N, vector<vector<float>>& status, vector<vector<float>>& trickled);
 
    public:
     Simulator(const int timeSteps, float absorbRate, int N,
@@ -40,18 +44,13 @@ class Simulator {
           totalSteps(0) {
         initElevations(elevationFile);
         initTrickleDir();
-        cout << this->rainSteps << endl;
+        // cout << this->rainSteps << endl;
         // cout << "------Simulator created------" << endl;
     }
     virtual ~Simulator() {}
-    void rain(vector<vector<float>>& status, vector<vector<float>>& trickled);
-    bool updateStatus(int N, vector<vector<float>>& status, vector<vector<float>>& trickled);
     void simulate();
     void printResult();
-
-   private:
-    void initElevations(ifstream& elevationFile);
-    void initTrickleDir();
+    
 };
 
 #endif
