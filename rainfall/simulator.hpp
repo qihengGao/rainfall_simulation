@@ -21,6 +21,8 @@ class Simulator {
 
     void initElevations(ifstream& elevationFile);
     void initTrickleDir();
+
+   private:
     void simulate(vector<vector<float>>& status, vector<vector<float>>& trickled);
     bool updateStatus(int N, vector<vector<float>>& status, vector<vector<float>>& trickled);
 
@@ -38,7 +40,7 @@ class Simulator {
         initTrickleDir();
     }
     virtual ~Simulator() {}
-    void simulate();
+    virtual void simulate();
     void printResult();
 };
 

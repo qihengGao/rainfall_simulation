@@ -66,14 +66,14 @@ void Simulator::simulate(vector<vector<float>>& status, vector<vector<float>>& t
             }
             // 2) if points have raindrops, absorb
             if (status[i][j] > 0.0) {
-                float toAbsorb = status[i][j] > this->absorbRate ? this->absorbRate : status[i][j];
+                float toAbsorb = min(status[i][j], this->absorbRate);
                 status[i][j] -= toAbsorb;
                 this->absorbed[i][j] += toAbsorb;
             }
             // 3a) calculate # of raindrops will next trickle to the lowest neighbors
             if (status[i][j] > 0.0 && this->trickleDir[i][j].size() > 0) {
                 // vector<pair<int, int>> lowestNeighbors = this->trickleDir[i][j];
-                float dropToTrickle = status[i][j] >= 1.0 ? 1.0 : status[i][j];
+                float dropToTrickle = min(status[i][j], 1.0f);
                 status[i][j] -= dropToTrickle;
                 float toNeigh = dropToTrickle / this->trickleDir[i][j].size();
                 for (const auto& point : this->trickleDir[i][j]) {
@@ -85,25 +85,25 @@ void Simulator::simulate(vector<vector<float>>& status, vector<vector<float>>& t
 }
 
 bool Simulator::updateStatus(int N, vector<vector<float>>& status, vector<vector<float>>& trickled) {
-    bool hasNextRound = false;
+    bool isWet = false;
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
             status[i][j] += trickled[i][j];
             trickled[i][j] = 0.0;
             if (abs(status[i][j]) > FLT_EPSILON) {
-                hasNextRound = true;
+                isWet = true;
             }
         }
     }
-    return hasNextRound;
+    return isWet;
 }
 
 void Simulator::simulate() {
     int N = this->landscape.size();
     vector<vector<float>> status(N, vector<float>(N, 0.0f));    // in-time raindrop status of landscape
     vector<vector<float>> trickled(N, vector<float>(N, 0.0f));  // in-time tricked raindrops for each point
-    const double begin = omp_get_wtime();
     bool isWet = true;
+    const double begin = omp_get_wtime();
     while (isWet) {
         ++this->totalSteps;
         // 1st Traverse: rain, absorb, calculate trickled
@@ -124,15 +124,6 @@ void Simulator::printResult() {
     for (const auto& row : this->absorbed) {
         for (const auto& res : row) {
             cout << setw(8) << setprecision(6) << res;
-        }
-        cout << endl;
-    }
-}
-
-void printMatrix(vector<vector<float>>& matrix) {
-    for (auto& row : matrix) {
-        for (auto& p : row) {
-            cout << p << " ";
         }
         cout << endl;
     }
