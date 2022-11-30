@@ -7,7 +7,7 @@
 #include <thread>
 
 using namespace std;
-// once_flag onceFlag;
+once_flag onceFlag;
 
 void SimulatorPro::simulate() {
     int N = this->landscape.size();
@@ -17,8 +17,6 @@ void SimulatorPro::simulate() {
     bool globalWet = true;
     const double beginTime = omp_get_wtime();
     for (int i = 0; i < this->threadNum; ++i) {
-        // thread th(&SimulatorPro::process, this, i, N, ref(status), ref(trickled), ref(globalWet));
-        // workers.push_back(move(th));
         workers.emplace_back(&SimulatorPro::process, this, i, N, ref(status), ref(trickled), ref(globalWet));
     }
 
@@ -30,11 +28,13 @@ void SimulatorPro::simulate() {
 }
 
 void SimulatorPro::process(const int id, const int N, vector<vector<float>>& status, vector<vector<float>>& trickled, bool& globalWet) {
+    // cout << "thread: " << id << " processing" << endl;
     int rows = N / this->threadNum;
-    int timeSteps = 1;
+    int timeSteps = 0;
     while (globalWet) {
+        ++timeSteps;
+        this->barrier.wait();
         bool localWet = false;
-
         for (int i = id * rows; i < (id + 1) * rows; ++i) {
             for (int j = 0; j < N; ++j) {
                 // 1) Receive a new raindrop for each point while still raining
@@ -55,16 +55,20 @@ void SimulatorPro::process(const int id, const int N, vector<vector<float>>& sta
                     float toNeigh = dropToTrickle / this->trickleDir[i][j].size();
                     // may introduce race condition on increment, add lock
                     for (const auto& point : this->trickleDir[i][j]) {
-                        // lock_guard<mutex> lk(*this->mutexes[i][j]);
-                        pthread_mutex_trylock(&this->mutexes[i][j]);
+                        int lockID = point.first * N + point.second;
+                        // unique_lock<mutex> lk(this->mutexes[lockID]);
+                        lock_guard<mutex> lk(this->mutexes[lockID]);
+                        // pthread_mutex_trylock(&this->mutexes[i][j]);
                         trickled[point.first][point.second] += toNeigh;
-                        pthread_mutex_unlock(&this->mutexes[i][j]);
+                        // pthread_mutex_unlock(&this->mutexes[i][j]);
+                        // lk.unlock();
                     }
                 }
             }
         }
 
         // add barrier, wait untill all current absorb and trickle matric are processed
+        this->barrier.wait();
 
         for (int i = id * rows; i < (id + 1) * rows; ++i) {
             for (int j = 0; j < N; ++j) {
@@ -75,17 +79,15 @@ void SimulatorPro::process(const int id, const int N, vector<vector<float>>& sta
                 }
             }
         }
-
         // add barrier, wait untill all status and trickle matrix are processed
-        // this->barrier.wait();
+        this->barrier.wait();
 
         unique_lock<mutex> lk(this->globalStatusLock);
-        globalWet = (globalWet && localWet);
+        globalWet = (false || localWet);
         lk.unlock();
 
         // add barrier, wait untill global status are determined by all threads
-        // this->barrier.wait();
-
-        // call_once(onceFlag, [this]() { this->totalSteps++; });
+        this->barrier.wait();
     }
+    cout << timeSteps << endl;
 }
