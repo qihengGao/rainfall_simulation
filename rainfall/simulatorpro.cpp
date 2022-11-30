@@ -16,7 +16,7 @@ void SimulatorPro::simulate() {
     // bool globalWet = true;
     const double beginTime = omp_get_wtime();
     for (int i = 0; i < this->threadNum; ++i) {
-        workers.emplace_back(&SimulatorPro::process, this, i, N, ref(status), ref(trickled));
+        workers.emplace_back(&SimulatorPro::simulateTask, this, i, N, ref(status), ref(trickled));
     }
 
     for (auto& t : workers) {
@@ -26,7 +26,7 @@ void SimulatorPro::simulate() {
     this->totalTime = endTime - beginTime;
 }
 
-void SimulatorPro::process(const int id, const int N, vector<vector<float>>& status, vector<vector<float>>& trickled) {
+void SimulatorPro::simulateTask(const int id, const int N, vector<vector<float>>& status, vector<vector<float>>& trickled) {
     int rows = N / this->threadNum;
     int steps = 0;
     while (true) {

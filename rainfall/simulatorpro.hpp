@@ -14,7 +14,7 @@ class SimulatorPro : public Simulator {
     mutex globalStatusLock;
     Barrier barrier;
     bool globalFinished;
-    void process(const int id, const int N, vector<vector<float>>& status, vector<vector<float>>& trickled);
+    void simulateTask(const int id, const int N, vector<vector<float>>& status, vector<vector<float>>& trickled);
 
    public:
     SimulatorPro(const int threadNum, const int rainSteps, const float absorbRate, const int N,
