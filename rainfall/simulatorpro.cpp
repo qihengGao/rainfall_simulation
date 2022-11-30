@@ -31,9 +31,6 @@ void SimulatorPro::process(const int id, const int N, vector<vector<float>>& sta
     int steps = 0;
     while (true) {
         ++steps;
-        if (id == 0 && (steps % 100 == 0 || steps >= 1010)) {
-            cout << steps << endl;
-        }
         for (int i = id * rows; i < (id + 1) * rows; ++i) {
             for (int j = 0; j < N; ++j) {
                 // 1) Receive a new raindrop for each point while still raining
@@ -66,8 +63,6 @@ void SimulatorPro::process(const int id, const int N, vector<vector<float>>& sta
             for (int j = 0; j < N; ++j) {
                 status[i][j] += trickled[i][j];
                 trickled[i][j] = 0.0;
-                if (id == 0 && steps == 149) {
-                }
                 if (abs(status[i][j]) > FLT_EPSILON) {
                     localFinshed = false;
                 }
