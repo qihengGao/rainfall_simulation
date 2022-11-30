@@ -1,6 +1,6 @@
 #ifndef __BARRIER_HPP__
 #define __BARRIER_HPP__
-
+// Reference: https://stackoverflow.com/questions/24465533/implementing-boostbarrier-in-c11
 #include <condition_variable>
 #include <mutex>
 
@@ -16,8 +16,8 @@ class Barrier {
 
    public:
     explicit Barrier(const int threadCount) : bTarget(threadCount),
-                                           threadCount(threadCount),
-                                           bGeneration(0) {
+                                              threadCount(threadCount),
+                                              bGeneration(0) {
     }
 
     void wait() {
