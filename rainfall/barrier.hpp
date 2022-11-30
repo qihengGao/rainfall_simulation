@@ -10,12 +10,12 @@ class Barrier {
    private:
     mutex bMutex;
     condition_variable bCond;
-    size_t bTarget;
-    size_t threadCount;
-    size_t bGeneration;
+    int bTarget;
+    int threadCount;
+    int bGeneration;
 
    public:
-    explicit Barrier(size_t threadCount) : bTarget(threadCount),
+    explicit Barrier(const int threadCount) : bTarget(threadCount),
                                            threadCount(threadCount),
                                            bGeneration(0) {
     }
