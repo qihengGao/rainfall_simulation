@@ -7,7 +7,6 @@
 #include <thread>
 
 using namespace std;
-once_flag onceFlag;
 
 void SimulatorPro::simulate() {
     int N = this->landscape.size();
@@ -33,7 +32,7 @@ void SimulatorPro::process(const int id, const int N, vector<vector<float>>& sta
     int timeSteps = 0;
     while (globalWet) {
         ++timeSteps;
-        this->barrier.wait();
+        // this->barrier.wait();
         bool localWet = false;
         for (int i = id * rows; i < (id + 1) * rows; ++i) {
             for (int j = 0; j < N; ++j) {
@@ -54,12 +53,17 @@ void SimulatorPro::process(const int id, const int N, vector<vector<float>>& sta
                     status[i][j] -= dropToTrickle;
                     float toNeigh = dropToTrickle / this->trickleDir[i][j].size();
                     // may introduce race condition on increment, add lock
-                    for (const auto& point : this->trickleDir[i][j]) {
-                        int lockID = point.first * N + point.second;
-                        // unique_lock<mutex> lk(this->mutexes[lockID]);
-                        lock_guard<mutex> lk(this->mutexes[lockID]);
+                    // for (const auto& point : this->trickleDir[i][j]) {
+                    for (int k = 0; k < this->trickleDir[i][j].size(); ++k) {
+                        int row = this->trickleDir[i][j][k].first;
+                        int col = this->trickleDir[i][j][k].second;
+                        // int lockID = point.first * N + point.second;
+                        int lockID = row * N + col;
+                        unique_lock<mutex> lk(this->mutexes[lockID]);
+                        // lock_guard<mutex> lk(this->mutexes[lockID]);
                         // pthread_mutex_trylock(&this->mutexes[i][j]);
-                        trickled[point.first][point.second] += toNeigh;
+                        // trickled[point.first][point.second] += toNeigh;
+                        trickled[row][col] += toNeigh;
                         // pthread_mutex_unlock(&this->mutexes[i][j]);
                         // lk.unlock();
                     }
@@ -79,8 +83,6 @@ void SimulatorPro::process(const int id, const int N, vector<vector<float>>& sta
                 }
             }
         }
-        // add barrier, wait untill all status and trickle matrix are processed
-        this->barrier.wait();
 
         unique_lock<mutex> lk(this->globalStatusLock);
         globalWet = (false || localWet);

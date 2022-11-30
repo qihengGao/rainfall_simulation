@@ -27,9 +27,9 @@ class Simulator {
     bool updateStatus(int N, vector<vector<float>>& status, vector<vector<float>>& trickled);
 
    public:
-    Simulator(const int timeSteps, const float absorbRate, const int N,
+    Simulator(const int rainSteps, const float absorbRate, const int N,
               ifstream& elevationFile)
-        : rainSteps(timeSteps),
+        : rainSteps(rainSteps),
           absorbRate(absorbRate),
           landscape(N, vector<int>(N)),
           trickleDir(N, vector<vector<pair<int, int>>>(N)),

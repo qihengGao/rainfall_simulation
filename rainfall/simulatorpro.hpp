@@ -16,8 +16,8 @@ class SimulatorPro : public Simulator {
     void process(const int id, const int N, vector<vector<float>>& status, vector<vector<float>>& trickled, bool& globalWet);
 
    public:
-    SimulatorPro(const int threadNum, const int timeSteps, const float absorbRate, const int N,
-                 ifstream& elevationFile) : Simulator(timeSteps, absorbRate, N, elevationFile),
+    SimulatorPro(const int threadNum, const int rainSteps, const float absorbRate, const int N,
+                 ifstream& elevationFile) : Simulator(rainSteps, absorbRate, N, elevationFile),
                                             threadNum(threadNum),
                                             mutexes(N * N),
                                             globalStatusLock(),
