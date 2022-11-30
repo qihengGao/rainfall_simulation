@@ -1,7 +1,7 @@
 #----- Modify CC and CFLAGS as appropriate in your environment
 CC = g++
 # CFLAGS = -O3 -std=c++11 -pthread -fopenmp
-CFLAGS = -O3 -std=c++11 -lpthread -fopenmp
+CFLAGS = -O3 -std=c++11 -pthread -fopenmp
 
 PROGS = rainfall_seq rainfall_pt
 OBJS = $(patsubst %, %.o, $(PROGS)) simulator.o simulatorpro.o barrier.o

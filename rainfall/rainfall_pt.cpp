@@ -31,8 +31,10 @@ int main(int argc, char** argv) {
         cout << "Cannot open: " << elevationFile << endl;
         return EXIT_FAILURE;
     }
-    unique_ptr<SimulatorPro> simulator(new SimulatorPro(threadNum, rainSteps, absorbRate, N, file));
+    unique_ptr<Simulator> simulator(new SimulatorPro(threadNum, rainSteps, absorbRate, N, file));
+    // Simulator* simulator = new SimulatorPro(threadNum, rainSteps, absorbRate, N, file);
     simulator->simulate();
     simulator->printResult();
+    // delete simulator;
     return EXIT_SUCCESS;
 }
