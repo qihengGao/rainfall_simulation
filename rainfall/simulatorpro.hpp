@@ -13,15 +13,17 @@ class SimulatorPro : public Simulator {
     vector<mutex> mutexes;
     mutex globalStatusLock;
     Barrier barrier;
-    void process(const int id, const int N, vector<vector<float>>& status, vector<vector<float>>& trickled, bool& globalWet);
-
+    bool globalFinished;
+    // void process(const int id, const int N, vector<vector<float>>& status, vector<vector<float>>& trickled, bool& globalWet);
+    void process(const int id, const int N, vector<vector<float>>& status, vector<vector<float>>& trickled);
    public:
     SimulatorPro(const int threadNum, const int rainSteps, const float absorbRate, const int N,
                  ifstream& elevationFile) : Simulator(rainSteps, absorbRate, N, elevationFile),
                                             threadNum(threadNum),
                                             mutexes(N * N),
                                             globalStatusLock(),
-                                            barrier(threadNum) {}
+                                            barrier(threadNum),
+                                            globalFinished(false) {}
     virtual ~SimulatorPro() {}
     virtual void simulate();
 };

@@ -13,10 +13,10 @@ void SimulatorPro::simulate() {
     vector<vector<float>> status(N, vector<float>(N, 0.0f));    // in-time raindrop status of landscape
     vector<vector<float>> trickled(N, vector<float>(N, 0.0f));  // in-time tricked raindrops for each point
     vector<thread> workers;
-    bool globalWet = true;
+    // bool globalWet = true;
     const double beginTime = omp_get_wtime();
     for (int i = 0; i < this->threadNum; ++i) {
-        workers.emplace_back(&SimulatorPro::process, this, i, N, ref(status), ref(trickled), ref(globalWet));
+        workers.emplace_back(&SimulatorPro::process, this, i, N, ref(status), ref(trickled));
     }
 
     for (auto& t : workers) {
@@ -26,18 +26,18 @@ void SimulatorPro::simulate() {
     this->totalTime = endTime - beginTime;
 }
 
-void SimulatorPro::process(const int id, const int N, vector<vector<float>>& status, vector<vector<float>>& trickled, bool& globalWet) {
-    // cout << "thread: " << id << " processing" << endl;
+void SimulatorPro::process(const int id, const int N, vector<vector<float>>& status, vector<vector<float>>& trickled) {
     int rows = N / this->threadNum;
-    int timeSteps = 0;
-    while (globalWet) {
-        ++timeSteps;
-        // this->barrier.wait();
-        bool localWet = false;
+    int steps = 0;
+    while (true) {
+        ++steps;
+        if (id == 0 && (steps % 100 == 0 || steps >= 1010)) {
+            cout << steps << endl;
+        }
         for (int i = id * rows; i < (id + 1) * rows; ++i) {
             for (int j = 0; j < N; ++j) {
                 // 1) Receive a new raindrop for each point while still raining
-                if (timeSteps <= this->rainSteps) {
+                if (steps <= this->rainSteps) {
                     status[i][j] += 1.0;
                 }
                 // 2) if points have raindrops, absorb
@@ -48,48 +48,42 @@ void SimulatorPro::process(const int id, const int N, vector<vector<float>>& sta
                 }
                 // 3a) calculate # of raindrops will next trickle to the lowest neighbors
                 if (status[i][j] > 0.0 && this->trickleDir[i][j].size() > 0) {
-                    // vector<pair<int, int>> lowestNeighbors = this->trickleDir[i][j];
                     float dropToTrickle = min(status[i][j], 1.0f);
                     status[i][j] -= dropToTrickle;
                     float toNeigh = dropToTrickle / this->trickleDir[i][j].size();
-                    // may introduce race condition on increment, add lock
-                    // for (const auto& point : this->trickleDir[i][j]) {
-                    for (int k = 0; k < this->trickleDir[i][j].size(); ++k) {
-                        int row = this->trickleDir[i][j][k].first;
-                        int col = this->trickleDir[i][j][k].second;
-                        // int lockID = point.first * N + point.second;
-                        int lockID = row * N + col;
+                    for (const auto& point : this->trickleDir[i][j]) {
+                        int lockID = point.first * N + point.second;
                         unique_lock<mutex> lk(this->mutexes[lockID]);
-                        // lock_guard<mutex> lk(this->mutexes[lockID]);
-                        // pthread_mutex_trylock(&this->mutexes[i][j]);
-                        // trickled[point.first][point.second] += toNeigh;
-                        trickled[row][col] += toNeigh;
-                        // pthread_mutex_unlock(&this->mutexes[i][j]);
-                        // lk.unlock();
+                        trickled[point.first][point.second] += toNeigh;
                     }
                 }
             }
         }
-
         // add barrier, wait untill all current absorb and trickle matric are processed
         this->barrier.wait();
-
+        bool localFinshed = true;
         for (int i = id * rows; i < (id + 1) * rows; ++i) {
             for (int j = 0; j < N; ++j) {
                 status[i][j] += trickled[i][j];
                 trickled[i][j] = 0.0;
+                if (id == 0 && steps == 149) {
+                }
                 if (abs(status[i][j]) > FLT_EPSILON) {
-                    localWet = true;
+                    localFinshed = false;
                 }
             }
         }
-
         unique_lock<mutex> lk(this->globalStatusLock);
-        globalWet = (false || localWet);
+        this->globalFinished = this->globalFinished && localFinshed;
         lk.unlock();
-
-        // add barrier, wait untill global status are determined by all threads
+        // add barrier, wait untill global status are passed to && with [locaFinished] of all threads
         this->barrier.wait();
+        if (this->globalFinished) {
+            this->totalSteps = steps;
+            return;
+        }
+        // add barrier, wait untill all threads has passed the globalFinished determination, reset globalFinished
+        this->barrier.wait();
+        this->globalFinished = true;
     }
-    cout << timeSteps << endl;
 }
