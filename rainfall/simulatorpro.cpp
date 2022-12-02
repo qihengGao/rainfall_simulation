@@ -13,12 +13,10 @@ void SimulatorPro::simulate() {
     vector<vector<float>> status(N, vector<float>(N, 0.0f));    // in-time raindrop status of landscape
     vector<vector<float>> trickled(N, vector<float>(N, 0.0f));  // in-time tricked raindrops for each point
     vector<thread> workers;
-    // bool globalWet = true;
     const double beginTime = omp_get_wtime();
     for (int i = 0; i < this->threadNum; ++i) {
         workers.emplace_back(&SimulatorPro::simulateTask, this, i, N, ref(status), ref(trickled));
     }
-
     for (auto& t : workers) {
         t.join();
     }
